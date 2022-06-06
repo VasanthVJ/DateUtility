@@ -1,0 +1,117 @@
+
+    /**
+     * add months to specific date
+     * @param dateFormat - pass the date format i.e dd/MM/yyyy
+     * @param specificDate - pass the specific date
+     * @param months - pass the number of months to be added
+     * @return - return the date
+     */
+    public String addMonthsToSpecificDate(final String dateFormat,final String specificDate,final int months){
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        Calendar cal = Calendar.getInstance();
+        try{
+            cal.setTime(sdf.parse(specificDate));
+        }catch(ParseException e){
+            e.printStackTrace();
+        }
+        cal.add(Calendar.MONTH,months);
+        return sdf.format(cal.getTime());
+    }
+
+    /**
+     * get the last date of month
+     * @param dateFormat - pass the date format i.e dd/MM/yyyy
+     * @param specificDate - pass the specific date
+     * @return - return the last date of  month
+     */
+    public String getLastDateOfMonth(final String dateFormat,final String specificDate){
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        Calendar cal = Calendar.getInstance();
+        try{
+            cal.setTime(sdf.parse(specificDate));
+        }catch(ParseException e){
+            e.printStackTrace();
+        }
+        cal.set(Calendar.DAY_OF_MONTH,cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return sdf.format(cal.getTime());
+    }
+    /**
+     * Calculates day due date based on the effective date
+     * @param effectiveDate - effective date
+     * @return - due date
+     */
+
+    public String dayDueDate(String effectiveDate) {
+        Calendar cal = setDate(effectiveDate);
+        cal.add(Calendar.DATE, CommonConstantsBKI.FOURTEEN_INTEGER_VALUE);
+        return getDateAsString(cal.getTime());
+    }
+
+    /**
+     * calculates Accounting period due date based on effective date
+     * @param effectiveDate - effective date
+     * @return - due date
+     */
+
+    public String accountingPeriodDueDate(final String effectiveDate) {
+        Calendar accountingDueDate = setDate(effectiveDate);
+        Calendar accountingDateFourteen = setDateAndCompare(effectiveDate);
+        if(accountingDueDate.after(accountingDateFourteen)){
+            accountingDueDate.add(Calendar.MONTH, CommonConstantsBKI.THREE);
+            accountingDueDate.set(Calendar.DAY_OF_MONTH, SeleniumUtils.ONE);
+            accountingDueDate.add(Calendar.DATE, SeleniumUtils.MINUS_ONE);
+        }else{
+            accountingDueDate.set(Calendar.DATE, CommonConstantsBKI.FIFTEEN_INTEGER_VALUE);
+            accountingDueDate.add(Calendar.MONTH, SeleniumUtils.TWO);
+        }
+        return getDateAsString(accountingDueDate.getTime());
+    }
+
+    /**
+     * set date based the effective date
+     * @param effectiveDate - effective date
+     * @return - new effective date
+     */
+
+    private Calendar setDate(final String effectiveDate) {
+        Calendar newEffDate = Calendar.getInstance();
+        List<Integer> dateListValue = SplitDate(effectiveDate);
+        newEffDate.set(dateListValue.get(CommonConstantsBKI.TWO), dateListValue.get(CommonConstantsBKI.ONE) - CommonConstantsBKI.ONE,
+                dateListValue.get(CommonConstantsBKI.ZERO));
+        return newEffDate;
+    }
+
+    /**
+     * Split the date based on the regex
+     * @param effectiveDate - effective date
+     * @return - date as list of integer
+     */
+
+    private List<Integer> SplitDate(final String effectiveDate) {
+        List<Integer> dateValue = Arrays.stream(effectiveDate.split(CommonConstantsBKI.RIGHT_SLASH)).map(Integer::parseInt).collect(Collectors.toList());
+        return dateValue;
+    }
+
+    /**
+     * set the date as 14 of any effective month for Accounting period comparison
+     * @param effectiveDate - pass the effective date
+     * @return - return the accounting period
+     */
+    private Calendar setDateAndCompare(final String effectiveDate){
+        Calendar accountPeriod = Calendar.getInstance();
+        List<Integer> dateList = SplitDate(effectiveDate);
+        accountPeriod.set(dateList.get(CommonConstantsBKI.TWO), dateList.get(CommonConstantsBKI.ONE) - CommonConstantsBKI.ONE, CommonConstantsBKI.FOURTEEN_INTEGER_VALUE);
+        return accountPeriod;
+    }
+
+    /**
+     * Sets End Date based on the effective date.
+     * @param effectiveDate - effective date
+     * @param noOfDays - No of days
+     * @return - due date
+     */
+    public String setEndDate(final String effectiveDate, final int noOfDays) {
+        Calendar cal = setDate(effectiveDate);
+        cal.add(Calendar.DATE, noOfDays);
+        return getDateAsString(cal.getTime());
+    }
